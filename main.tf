@@ -1,13 +1,16 @@
-data "aws_caller_identity" "current" {}
-
 locals {
   # Couple of queries to shrink the data-set in tfvars > time-saver
 
   domains_hosted_on_route53                      = try({ for k, v in var.domains : k => v if try(v.route53_zone, false) == true }, {})
-  domains_hosted_elsewhere                       = try({ for k, v in var.domains : k => v if try(v.route53_zone, false) == false }, {}) #these will not have clean integration
+  domains_hosted_elsewhere                       = try({ for k, v in var.domains : k => v if try(v.route53_zone, false) == false }, {}) #considering outputting these to an ascii table during terraform apply
   domains_hosted_on_route53_with_mta_sts_enabled = try({ for k, v in var.domains : k => v if try(v.route53_zone, false) == true && try(v.mta_sts_enabled, false) == true }, {})
 
 }
+
+################################################################
+##    AWS LOGGED-IN-USER DATA                                 ##
+################################################################
+data "aws_caller_identity" "current" {}
 
 ################################################################
 ##    ROUTE 53 RESOURCES                                      ##
@@ -43,7 +46,7 @@ resource "aws_route53_record" "mta_sts_cloud_front_cname" {
   ]
   # OR
   # alias { 
-  #   evaluate_target_health = true
+  #   evaluate_target_health = false
   #   name                   = aws_cloudfront_distribution.fqdn[each.key].domain_name
   #   zone_id                = aws_cloudfront_distribution.fqdn[each.key].hosted_zone_id
   # }
