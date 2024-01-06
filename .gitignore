@@ -1,0 +1,4 @@
+# Do not push these files during commit
+.terraform
+.terraform.lock.hcl
+.terraform.state
