@@ -139,6 +139,22 @@ resource "aws_s3_bucket" "mta_sts" {
   bucket   = "mta-sts.${each.key}"
 }
 
+# Move the bucket to Glacier storage, much cheaper!
+resource "aws_s3_bucket_lifecycle_configuration" "mta_sts" {
+  for_each = try(aws_s3_bucket.mta_sts,{})
+  bucket = each.value.id
+  rule {
+    id      = ".well-known"
+    status  = "Enabled"
+    # Current version transition - move all files to glacier/nas storage after 30-days, reducing costs in month 2 onwards by approx 50%
+    transition {
+      days          = 30
+      storage_class = "GLACIER"
+    }
+  }
+  depends_on = [aws_s3_bucket.mta_sts]
+}
+
 # Set the s3 bucket objects to inherit ownership from the bucket
 resource "aws_s3_bucket_ownership_controls" "mta_sts" {
   for_each = local.domains_hosted_on_route53_with_mta_sts_enabled
@@ -168,7 +184,7 @@ resource "aws_s3_object" "mta_sts_folder" {
 }
 
 # Create the `.well-known/mta-sts.txt` policy file
-resource "aws_s3_object" "mta-sts-policy" {
+resource "aws_s3_object" "mta_sts_policy" {
   for_each     = local.domains_hosted_on_route53_with_mta_sts_enabled
   bucket       = aws_s3_bucket.mta_sts[each.key].id
   key          = ".well-known/mta-sts.txt"
