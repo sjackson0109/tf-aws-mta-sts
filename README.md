@@ -1,12 +1,11 @@
 # Project
-
-Deploys an MTA-STS end-to-end configuration, for a nested tier of customer domain-names all hosted on AWS using terraform.
+Deploys an end-to-end MTA-STS with TLS-RPT configuration, for a nested tier of customer domain-names all hosted on AWS, with terraform.
 
 # Note to self
 If the DNS domain-name is NOT hosted on AWS Route53, each DNS records in the PLAN would need to be created manually.
 
 
-# Terraform state entitles:
+# Terraform state (example):
 data.aws_iam_policy_document.oai_access["mytestdomain.com"]
 data.aws_route53_zone.domain["mytestdomain.com"]
 aws_acm_certificate.mta_sts["mytestdomain.com"]
